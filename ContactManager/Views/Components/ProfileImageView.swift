@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-/// Circular avatar plus an optional "Generate image" button. Shows a spinner
+/// Circular avatar plus an optional "Generate" button. Shows a spinner
 /// and disables the button while a random image is being fetched.
 struct ProfileImageView: View {
     let imageData: Data?

@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, nullable) id<ContactsListViewControllerDelegate> delegate;
 /// When YES this instance shows only favorites (the Favorites tab).
 @property (nonatomic, assign) BOOL favoritesOnly;
-/// When YES a "Nuevo" (+) button is shown (the Contacts tab only).
+/// When YES a "Nuevo" (+) button is shown in the navigation bar.
 @property (nonatomic, assign) BOOL showsAddButton;
 
 @end
