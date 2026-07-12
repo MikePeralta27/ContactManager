@@ -30,7 +30,7 @@ enum ContactValidator {
     static func validateName(_ value: String, fieldLabel: String, required: Bool) -> String? {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return required ? "\(fieldLabel) is required." : nil }
-        if trimmed.count > 50 { return "\(fieldLabel) must be 50 characters or fewer." }
+        if trimmed.count > 20 { return "\(fieldLabel) must be 20 characters or fewer." }
         // Unicode letter class (accented / international names) plus digits.
         let pattern = "^[\\p{L}0-9][\\p{L}0-9 '\\-]*$"
         if trimmed.range(of: pattern, options: .regularExpression) == nil {
