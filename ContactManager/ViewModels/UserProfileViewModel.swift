@@ -76,6 +76,32 @@ final class UserProfileViewModel {
         )
         return errors.isEmpty
     }
+    
+    var isValid: Bool {
+        ContactValidator.validateAll(
+            firstName: firstName,
+            lastName: lastName,
+            phoneNumber: phoneNumber,
+            email: email
+        ).isEmpty
+    }
+    /// Inline errors while typing; skip empty fields so * markers handle “required”.
+    var visibleErrors: [ContactField: String] {
+        var result: [ContactField: String] = [:]
+        if !firstName.isEmpty, let e = ContactValidator.validateFirstName(firstName) {
+            result[.firstName] = e
+        }
+        if !lastName.isEmpty, let e = ContactValidator.validateLastName(lastName) {
+            result[.lastName] = e
+        }
+        if !phoneNumber.isEmpty, let e = ContactValidator.validatePhone(phoneNumber) {
+            result[.phoneNumber] = e
+        }
+        if !email.isEmpty, let e = ContactValidator.validateEmail(email) {
+            result[.email] = e
+        }
+        return result
+    }
 
     /// Returns true if the profile was valid and saved.
     @discardableResult

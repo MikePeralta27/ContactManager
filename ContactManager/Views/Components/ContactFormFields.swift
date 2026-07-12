@@ -16,7 +16,8 @@ struct ContactFormFields: View {
     /// Optional so the Me screen (no favorite concept) can omit the toggle.
     var isFavorite: Binding<Bool>? = nil
     var errors: [ContactField: String] = [:]
-    /// Fields that should show a required marker (empty ones block Save).
+    /// Fields that should show a required marker when empty (Create/Detail).
+    /// Parents decide whether empty required fields also disable Save.
     var requiredFields: Set<ContactField> = []
     var isEditable: Bool = true
 

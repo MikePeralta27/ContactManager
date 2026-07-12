@@ -4,6 +4,8 @@
 //
 //  The "Me" tab: shows the single user-profile contact. Read-only until the
 //  top-left Edit button (or a long-press "Edit" context menu) enables editing.
+//  While editing: X (discard, with confirmation if unsaved) on the left,
+//  Save on the right.
 //
 
 import SwiftUI
@@ -32,7 +34,8 @@ struct MeView: View {
                     lastName: $viewModel.lastName,
                     phoneNumber: $viewModel.phoneNumber,
                     email: $viewModel.email,
-                    errors: viewModel.errors,
+                    errors: viewModel.visibleErrors,
+                    requiredFields: [.firstName, .phoneNumber],
                     isEditable: viewModel.isEditing
                 )
                 // Long-press any field row -> "Edit" (same as the Edit button).
@@ -62,14 +65,17 @@ struct MeView: View {
                         } label: {
                             Image(systemName: "xmark")
                         }
-                        .discardChangesConfirmation(isPresented: $showDiscardConfirmation) {
+                        .discardChangesConfirmation(
+                            isPresented: $showDiscardConfirmation
+                        ) {
                             viewModel.cancelEditing(reloadFrom: store)
                         }
                         .accessibilityLabel("Discard changes")
                     }
-                    
+
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Save") { viewModel.save(to: store) }
+                            .disabled(!viewModel.isValid)
                     }
                 } else {
                     ToolbarItem(placement: .topBarLeading) {
@@ -77,7 +83,7 @@ struct MeView: View {
                     }
                 }
             }
-            
+
             .onAppear { viewModel.load(from: store) }
             .alert(
                 "Image Error",
@@ -95,7 +101,7 @@ struct MeView: View {
 }
 
 #if DEBUG
-#Preview {
-    MeView(store: PreviewSupport.makeStore())
-}
+    #Preview {
+        MeView(store: PreviewSupport.makeStore())
+    }
 #endif

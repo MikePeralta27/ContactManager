@@ -109,7 +109,8 @@ final class ContactFormViewModel {
     }
 
     /// Errors to show inline while typing: only for fields that have content
-    /// (so empty required fields show a marker + disabled Save, not a red error).
+    /// (so empty required fields can show a marker without a red error).
+    /// Create Contact also disables Save until `isValid`; Detail validates on Save tap.
     var visibleErrors: [ContactField: String] {
         var result: [ContactField: String] = [:]
         if !firstName.isEmpty, let e = ContactValidator.validateFirstName(firstName) {
