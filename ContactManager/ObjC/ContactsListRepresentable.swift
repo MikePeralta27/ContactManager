@@ -42,12 +42,13 @@ struct ContactsListRepresentable: UIViewControllerRepresentable {
         let store: ContactStore
         weak var navigationController: UINavigationController?
 
-        // Retained while a Detail screen is on-screen so the UIKit Save/Cancel
-        // buttons (below) can drive the same view model the SwiftUI form is
-        // bound to.
+        // Retained while a Detail screen is on-screen so the UIKit Save/Cancel/
+        // Delete buttons (below) can drive the same view model the SwiftUI form
+        // is bound to.
         private var detailViewModel: ContactFormViewModel?
         private var detailContactID: String?
         private weak var detailCancelButton: UIBarButtonItem?
+        private weak var detailDeleteButton: UIBarButtonItem?
 
         init(store: ContactStore) {
             self.store = store
@@ -82,8 +83,8 @@ struct ContactsListRepresentable: UIViewControllerRepresentable {
             let host = UIHostingController(rootView: AnyView(detail))
             host.title = "Details"
             host.navigationItem.largeTitleDisplayMode = .never
-            // Save/Cancel on the UIKit nav bar so they reliably show on the
-            // pushed screen. Setting a custom left item also disables the
+            // Save / Delete / Cancel on the UIKit nav bar so they reliably show
+            // on the pushed screen. Setting a custom left item also disables the
             // swipe-back gesture, so discarding always goes through Cancel.
             let cancelButton = UIBarButtonItem(
                 image: UIImage(systemName: "xmark"),
@@ -95,12 +96,23 @@ struct ContactsListRepresentable: UIViewControllerRepresentable {
             host.navigationItem.leftBarButtonItem = cancelButton
             detailCancelButton = cancelButton
 
-            host.navigationItem.rightBarButtonItem = UIBarButtonItem(
+            let saveButton = UIBarButtonItem(
                 title: "Save",
-                style: .done,
+                style: .prominent,
                 target: self,
                 action: #selector(saveDetail)
             )
+            let deleteButton = UIBarButtonItem(
+                image: UIImage(systemName: "trash"),
+                style: .plain,
+                target: self,
+                action: #selector(deleteDetail)
+            )
+            deleteButton.tintColor = .systemRed
+            deleteButton.accessibilityLabel = "Delete"
+            detailDeleteButton = deleteButton
+            // First item is trailing-most: Save on the far right, Delete beside it.
+            host.navigationItem.rightBarButtonItems = [saveButton, deleteButton]
             navigationController?.pushViewController(host, animated: true)
         }
 
@@ -110,6 +122,25 @@ struct ContactsListRepresentable: UIViewControllerRepresentable {
             if detailViewModel.saveUpdate(to: store, id: detailContactID) {
                 navigationController?.popViewController(animated: true)
             }
+        }
+
+        @objc private func deleteDetail() {
+            guard let detailContactID else { return }
+
+            let alert = UIAlertController(
+                title: "Are you sure you want to delete?",
+                message: "This contact will be permanently deleted.",
+                preferredStyle: .actionSheet
+            )
+            alert.addAction(UIAlertAction(title: "Delete Contact", style: .destructive) { [weak self] _ in
+                guard let self else { return }
+                self.store.deleteContacts(ids: [detailContactID])
+                self.navigationController?.popViewController(animated: true)
+            })
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            // Anchor the sheet to the trash button.
+            alert.popoverPresentationController?.barButtonItem = detailDeleteButton
+            navigationController?.topViewController?.present(alert, animated: true)
         }
 
         @objc private func cancelDetail() {

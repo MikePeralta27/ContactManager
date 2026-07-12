@@ -3,10 +3,12 @@
 //  ContactManager
 //
 //  Pushed onto the Objective-C navigation stack when a row is tapped.
-//  The Save button lives on the UIKit navigation bar (configured by the
+//  Save and Cancel (X) live on the UIKit navigation bar (configured by the
 //  Coordinator) because a SwiftUI `.toolbar` does not reliably bridge into a
 //  UIKit UINavigationController when the view is hosted via UIHostingController.
-//  The Coordinator owns the view model and triggers `saveUpdate` on tap.
+//  The Coordinator owns the view model, triggers `saveUpdate` on Save, presents
+//  delete confirmation from the trash button, and presents the shared discard
+//  confirmation when Cancel is tapped with unsaved changes.
 //
 
 import SwiftUI
