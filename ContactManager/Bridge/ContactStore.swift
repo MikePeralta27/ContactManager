@@ -122,7 +122,8 @@ final class ContactStore: NSObject {
         saveAndNotify()
     }
 
-    /// Persist edits made directly to a live model instance (e.g. the Me screen).
+    /// Persist edits already applied on a live `Contact` instance.
+    /// Prefer `updateContact` when fields are held in a view-model draft.
     func commit(_ contact: Contact) {
         contact.updatedAt = .now
         saveAndNotify()
