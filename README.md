@@ -100,3 +100,4 @@ ContactManagerUITests/                       UI tests
 - Images come from `https://picsum.photos/{width}/{height}` (a fresh random image per request).
 - The single "Me" profile record is seeded once at launch and cannot be deleted.
 
+https://github.com/user-attachments/assets/2f54b279-bbb9-4693-b33e-e1a8384b9157
