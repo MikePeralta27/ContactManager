@@ -4,12 +4,14 @@
 //
 //  Drives the "Me" tab: loads the single user-profile record, toggles edit
 //  mode, generates a profile image, and saves through the store.
+//  @MainActor so UI state (including post-await image updates) stays on main.
 //
 
 import Foundation
 import Observation
 
 @Observable
+@MainActor
 final class UserProfileViewModel {
     var firstName: String = ""
     var lastName: String = ""

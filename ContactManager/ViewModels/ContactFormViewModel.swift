@@ -5,12 +5,14 @@
 //  Drives the Create sheet and the Detail screen. Holds draft fields,
 //  validation errors, and image-generation state. Image fetching goes through
 //  an injected ImageServiceProviding so tests can supply a mock.
+//  @MainActor so UI state (including post-await image updates) stays on main.
 //
 
 import Foundation
 import Observation
 
 @Observable
+@MainActor
 final class ContactFormViewModel {
     var firstName: String = ""
     var lastName: String = ""
@@ -91,7 +93,6 @@ final class ContactFormViewModel {
 
     /// Validates and, if valid, writes changes back to an existing contact.
     /// Returns false (and surfaces inline errors) when the form is invalid.
-    @MainActor
     @discardableResult
     func saveUpdate(to store: ContactStore, id: String) -> Bool {
         guard validate() else { return false }
