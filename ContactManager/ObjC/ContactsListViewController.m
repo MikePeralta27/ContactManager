@@ -130,6 +130,8 @@ static NSString *const kCellID = @"ContactCell";
                           handler:^(__kindof UIAction *_Nonnull action) {
                             weakSelf.ascending = YES;
                             [weakSelf reloadContacts];
+                            // Rebuild the menu so the checkmark matches the new order.
+                            [weakSelf updateRightBarButtonItems];
                           }];
     UIAction *desc =
         [UIAction actionWithTitle:@"Name (Z-A)"
@@ -138,6 +140,7 @@ static NSString *const kCellID = @"ContactCell";
                           handler:^(__kindof UIAction *_Nonnull action) {
                             weakSelf.ascending = NO;
                             [weakSelf reloadContacts];
+                            [weakSelf updateRightBarButtonItems];
                           }];
     asc.state = self.ascending ? UIMenuElementStateOn : UIMenuElementStateOff;
     desc.state = self.ascending ? UIMenuElementStateOff : UIMenuElementStateOn;
