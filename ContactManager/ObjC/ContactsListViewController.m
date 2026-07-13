@@ -429,7 +429,8 @@ static NSString *const kCellID = @"ContactCell";
         [symbol imageWithTintColor:UIColor.tertiaryLabelColor
                      renderingMode:UIImageRenderingModeAlwaysOriginal];
 
-    CGFloat scale = UIScreen.mainScreen.scale;
+    CGFloat scale = self.traitCollection.displayScale;
+    if (scale <= 0) { scale = 2.0; }
     CGSize canvas = CGSizeMake(size, size);
 
     UIGraphicsImageRendererFormat *format =
@@ -447,7 +448,8 @@ static NSString *const kCellID = @"ContactCell";
 
 // Returns a square, center-cropped copy of the image scaled to size x size.
 - (UIImage *)squareImage:(UIImage *)image targetSize:(CGFloat)size {
-    CGFloat scale = UIScreen.mainScreen.scale;
+    CGFloat scale = self.traitCollection.displayScale;
+    if (scale <= 0) { scale = 2.0; }
     CGSize pixelSize = CGSizeMake(size, size);
 
     UIGraphicsImageRendererFormat *format =
