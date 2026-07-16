@@ -26,13 +26,12 @@ final class ContactFormViewModelTests: XCTestCase {
 
     private func makeStoreWithContact() throws -> (ContactStore, String) {
         let store = ContactStore(context: container.mainContext)
-        store.createContact(firstName: "Ada", lastName: "Lovelace",
-                            phoneNumber: "5551234567", email: "ada@example.com",
-                            isFavorite: false, imageData: nil)
-        let id = try XCTUnwrap(
-            store.contacts(matchingSearch: "", favoritesOnly: false, ascending: true).first?.id
+        let created = try XCTUnwrap(
+            store.createContact(firstName: "Ada", lastName: "Lovelace",
+                                phoneNumber: "5551234567", email: "ada@example.com",
+                                isFavorite: false, imageData: nil)
         )
-        return (store, id)
+        return (store, created.id.uuidString)
     }
 
     func testValidationFailsWhenEmpty() {
@@ -64,11 +63,28 @@ final class ContactFormViewModelTests: XCTestCase {
         vm.email = ""                // email now optional
 
         XCTAssertTrue(vm.saveUpdate(to: store, id: id))
+        XCTAssertNil(vm.saveErrorMessage)
 
         let updated = try XCTUnwrap(store.contact(withID: id))
         XCTAssertEqual(updated.lastName, "Byron")
         XCTAssertEqual(updated.phoneNumber.filter(\.isNumber), "5559998888")
         XCTAssertEqual(updated.email, "")
+    }
+
+    func testSaveCreatePersistsAndClearsSaveError() throws {
+        let store = ContactStore(context: container.mainContext)
+        let vm = ContactFormViewModel(imageService: MockImageService())
+        vm.firstName = "Grace"
+        vm.lastName = "Hopper"
+        vm.phoneNumber = "5551112222"
+        vm.email = "grace@navy.mil"
+
+        XCTAssertTrue(vm.saveCreate(to: store))
+        XCTAssertNil(vm.saveErrorMessage)
+        XCTAssertEqual(
+            store.contacts(matchingSearch: "grace", favoritesOnly: false, ascending: true).count,
+            1
+        )
     }
 
     func testSaveUpdateFailsWhenInvalidAndLeavesContactUnchanged() throws {
@@ -80,6 +96,7 @@ final class ContactFormViewModelTests: XCTestCase {
 
         XCTAssertFalse(vm.saveUpdate(to: store, id: id))
         XCTAssertNotNil(vm.errors[.firstName])
+        XCTAssertNil(vm.saveErrorMessage)
 
         let unchanged = try XCTUnwrap(store.contact(withID: id))
         XCTAssertEqual(unchanged.firstName, "Ada")

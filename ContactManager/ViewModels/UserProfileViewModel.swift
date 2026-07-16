@@ -33,6 +33,9 @@ final class UserProfileViewModel {
     var errors: [ContactField: String] = [:]
     var isGeneratingImage: Bool = false
     var imageErrorMessage: String?
+    var saveErrorMessage: String?
+
+    private static let saveFailedMessage = "Couldn't save this contact. Please try again."
 
     private var profileID: String?
     private let imageService: ImageServiceProviding
@@ -109,7 +112,8 @@ final class UserProfileViewModel {
     @discardableResult
     func save(to store: ContactStore) -> Bool {
         guard validate(), let profileID else { return false }
-        store.updateContact(
+        saveErrorMessage = nil
+        guard store.updateContact(
             id: profileID,
             firstName: firstName,
             lastName: lastName,
@@ -117,7 +121,10 @@ final class UserProfileViewModel {
             email: email,
             isFavorite: false,
             imageData: imageData
-        )
+        ) else {
+            saveErrorMessage = Self.saveFailedMessage
+            return false
+        }
         savedSnapshot = currentSnapshot
         isEditing = false
         return true
@@ -127,6 +134,7 @@ final class UserProfileViewModel {
     func cancelEditing(reloadFrom store: ContactStore) {
         load(from: store)
         errors = [:]
+        saveErrorMessage = nil
         isEditing = false
     }
 

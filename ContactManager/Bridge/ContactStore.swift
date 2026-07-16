@@ -88,7 +88,7 @@ final class ContactStore: NSObject {
         email: String,
         isFavorite: Bool,
         imageData: Data?
-    ) -> Contact {
+    ) -> Contact? {
         let contact = Contact(
             firstName: firstName,
             lastName: lastName,
@@ -98,10 +98,11 @@ final class ContactStore: NSObject {
             imageData: imageData
         )
         context.insert(contact)
-        saveAndNotify()
+        guard saveAndNotify() else { return nil }
         return contact
     }
 
+    @discardableResult
     func updateContact(
         id: String,
         firstName: String,
@@ -110,8 +111,8 @@ final class ContactStore: NSObject {
         email: String,
         isFavorite: Bool,
         imageData: Data?
-    ) {
-        guard let contact = contact(withID: id) else { return }
+    ) -> Bool {
+        guard let contact = contact(withID: id) else { return false }
         contact.firstName = firstName
         contact.lastName = lastName
         contact.phoneNumber = phoneNumber
@@ -119,42 +120,54 @@ final class ContactStore: NSObject {
         contact.isFavorite = isFavorite
         contact.imageData = imageData
         contact.updatedAt = .now
-        saveAndNotify()
+        return saveAndNotify()
     }
 
     /// Persist edits already applied on a live `Contact` instance.
     /// Prefer `updateContact` when fields are held in a view-model draft.
-    func commit(_ contact: Contact) {
+    @discardableResult
+    func commit(_ contact: Contact) -> Bool {
         contact.updatedAt = .now
-        saveAndNotify()
+        return saveAndNotify()
     }
 
+    @discardableResult
     @objc(deleteContactsWithIDs:)
-    func deleteContacts(ids: [String]) {
+    func deleteContacts(ids: [String]) -> Bool {
         for id in ids {
             guard let contact = contact(withID: id) else { continue }
             // Never allow deleting the device owner record.
             guard !contact.isUserProfile else { continue }
             context.delete(contact)
         }
-        saveAndNotify()
+        return saveAndNotify()
     }
 
+    @discardableResult
     @objc(setFavorite:forID:)
-    func setFavorite(_ isFavorite: Bool, forID id: String) {
-        guard let contact = contact(withID: id) else { return }
+    func setFavorite(_ isFavorite: Bool, forID id: String) -> Bool {
+        guard let contact = contact(withID: id) else { return false }
         contact.isFavorite = isFavorite
         contact.updatedAt = .now
-        saveAndNotify()
+        return saveAndNotify()
     }
 
     // MARK: - Persistence
 
-    private func saveAndNotify() {
-        try? context.save()
-        NotificationCenter.default.post(
-            name: Notification.Name(ContactStore.contactsDidChangeNotification),
-            object: nil
-        )
+    /// Saves the context and posts `contactsDidChangeNotification` only on success.
+    /// On failure, rolls back in-memory changes and returns `false`.
+    @discardableResult
+    private func saveAndNotify() -> Bool {
+        do {
+            try context.save()
+            NotificationCenter.default.post(
+                name: Notification.Name(ContactStore.contactsDidChangeNotification),
+                object: nil
+            )
+            return true
+        } catch {
+            context.rollback()
+            return false
+        }
     }
 }

@@ -102,9 +102,10 @@ final class ContactStoreTests: XCTestCase {
     func testCreateContactAppears() throws {
         let (store, ctx) = try makeStore()
         seed(ctx)
-        store.createContact(firstName: "Katherine", lastName: "Johnson",
-                            phoneNumber: "5554445555", email: "kj@nasa.gov",
-                            isFavorite: false, imageData: nil)
+        let created = store.createContact(firstName: "Katherine", lastName: "Johnson",
+                                          phoneNumber: "5554445555", email: "kj@nasa.gov",
+                                          isFavorite: false, imageData: nil)
+        XCTAssertNotNil(created)
         let all = store.contacts(matchingSearch: "", favoritesOnly: false, ascending: true)
         XCTAssertEqual(all.count, 4)
     }
@@ -114,7 +115,7 @@ final class ContactStoreTests: XCTestCase {
         seed(ctx)
         let all = store.contacts(matchingSearch: "alan", favoritesOnly: false, ascending: true)
         let id = try XCTUnwrap(all.first?.id)
-        store.deleteContacts(ids: [id])
+        XCTAssertTrue(store.deleteContacts(ids: [id]))
         let after = store.contacts(matchingSearch: "alan", favoritesOnly: false, ascending: true)
         XCTAssertTrue(after.isEmpty)
     }
@@ -123,7 +124,8 @@ final class ContactStoreTests: XCTestCase {
         let (store, ctx) = try makeStore()
         seed(ctx)
         let profile = try XCTUnwrap(store.userProfile())
-        store.deleteContacts(ids: [profile.id.uuidString])
+        // Profile is skipped; empty delete still saves successfully.
+        XCTAssertTrue(store.deleteContacts(ids: [profile.id.uuidString]))
         XCTAssertNotNil(store.userProfile(), "The user profile must not be deletable.")
     }
 
@@ -133,7 +135,7 @@ final class ContactStoreTests: XCTestCase {
         let alan = try XCTUnwrap(
             store.contacts(matchingSearch: "alan", favoritesOnly: false, ascending: true).first
         )
-        store.setFavorite(true, forID: alan.id)
+        XCTAssertTrue(store.setFavorite(true, forID: alan.id))
         let favs = store.contacts(matchingSearch: "", favoritesOnly: true, ascending: true)
         XCTAssertTrue(favs.contains { $0.firstName == "Alan" })
     }

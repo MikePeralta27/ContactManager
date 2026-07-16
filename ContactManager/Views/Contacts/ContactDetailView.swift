@@ -51,6 +51,17 @@ struct ContactDetailView: View {
         } message: {
             Text(viewModel.imageErrorMessage ?? "")
         }
+        .alert(
+            "Save Error",
+            isPresented: Binding(
+                get: { viewModel.saveErrorMessage != nil },
+                set: { if !$0 { viewModel.saveErrorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.saveErrorMessage ?? "")
+        }
     }
 }
 

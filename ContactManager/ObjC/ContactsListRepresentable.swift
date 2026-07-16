@@ -134,7 +134,16 @@ struct ContactsListRepresentable: UIViewControllerRepresentable {
             )
             alert.addAction(UIAlertAction(title: "Delete Contact", style: .destructive) { [weak self] _ in
                 guard let self else { return }
-                self.store.deleteContacts(ids: [detailContactID])
+                guard self.store.deleteContacts(ids: [detailContactID]) else {
+                    let errorAlert = UIAlertController(
+                        title: "Delete Error",
+                        message: "Couldn't delete this contact. Please try again.",
+                        preferredStyle: .alert
+                    )
+                    errorAlert.addAction(UIAlertAction(title: "OK", style: .cancel))
+                    self.navigationController?.topViewController?.present(errorAlert, animated: true)
+                    return
+                }
                 self.navigationController?.popViewController(animated: true)
             })
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))

@@ -36,6 +36,9 @@ final class ContactFormViewModel {
     var errors: [ContactField: String] = [:]
     var isGeneratingImage: Bool = false
     var imageErrorMessage: String?
+    var saveErrorMessage: String?
+
+    private static let saveFailedMessage = "Couldn't save this contact. Please try again."
 
     private let imageService: ImageServiceProviding
 
@@ -91,12 +94,34 @@ final class ContactFormViewModel {
         ).isEmpty
     }
 
+    /// Validates and creates a new contact. Returns false on validation or save failure.
+    @discardableResult
+    func saveCreate(to store: ContactStore) -> Bool {
+        guard validate() else { return false }
+        saveErrorMessage = nil
+        guard store.createContact(
+            firstName: firstName,
+            lastName: lastName,
+            phoneNumber: phoneNumber,
+            email: email,
+            isFavorite: isFavorite,
+            imageData: imageData
+        ) != nil else {
+            saveErrorMessage = Self.saveFailedMessage
+            return false
+        }
+        savedSnapshot = currentSnapshot
+        return true
+    }
+
     /// Validates and, if valid, writes changes back to an existing contact.
-    /// Returns false (and surfaces inline errors) when the form is invalid.
+    /// Returns false (and surfaces inline errors) when the form is invalid,
+    /// or when persistence fails.
     @discardableResult
     func saveUpdate(to store: ContactStore, id: String) -> Bool {
         guard validate() else { return false }
-        store.updateContact(
+        saveErrorMessage = nil
+        guard store.updateContact(
             id: id,
             firstName: firstName,
             lastName: lastName,
@@ -104,7 +129,10 @@ final class ContactFormViewModel {
             email: email,
             isFavorite: isFavorite,
             imageData: imageData
-        )
+        ) else {
+            saveErrorMessage = Self.saveFailedMessage
+            return false
+        }
         savedSnapshot = currentSnapshot
         return true
     }
