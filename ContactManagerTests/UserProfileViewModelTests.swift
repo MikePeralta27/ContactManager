@@ -55,6 +55,7 @@ final class UserProfileViewModelTests: XCTestCase {
         vm.firstName = "Renamed"
         XCTAssertTrue(vm.save(to: store))
         XCTAssertFalse(vm.isEditing)
+        XCTAssertNil(vm.saveErrorMessage)
 
         let profile = try XCTUnwrap(store.userProfile())
         XCTAssertEqual(profile.firstName, "Renamed")
@@ -112,5 +113,6 @@ final class UserProfileViewModelTests: XCTestCase {
         XCTAssertEqual(vm.email, "me@example.com")
         XCTAssertFalse(vm.isEditing)
         XCTAssertTrue(vm.errors.isEmpty)
+        XCTAssertNil(vm.saveErrorMessage)
     }
 }

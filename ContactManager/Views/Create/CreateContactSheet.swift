@@ -59,20 +59,24 @@ struct CreateContactSheet: View {
             } message: {
                 Text(viewModel.imageErrorMessage ?? "")
             }
+            .alert(
+                "Save Error",
+                isPresented: Binding(
+                    get: { viewModel.saveErrorMessage != nil },
+                    set: { if !$0 { viewModel.saveErrorMessage = nil } }
+                )
+            ) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(viewModel.saveErrorMessage ?? "")
+            }
         }
     }
 
     private func save() {
-        guard viewModel.validate() else { return }
-        store.createContact(
-            firstName: viewModel.firstName,
-            lastName: viewModel.lastName,
-            phoneNumber: viewModel.phoneNumber,
-            email: viewModel.email,
-            isFavorite: viewModel.isFavorite,
-            imageData: viewModel.imageData
-        )
-        onClose()
+        if viewModel.saveCreate(to: store) {
+            onClose()
+        }
     }
 }
 
